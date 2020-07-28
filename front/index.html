@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Envíanos un mensaje!</h1>
+        <form action="http://sys.agro/api/form" method="post">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email" aria-describedby="emailHelp" required>
+            </div>
+            <div class="form-group">
+                <label for="nombre">Nombre</label>
+                <input class="form-control" id="nombre" aria-describedby="emailHelp" required>
+            </div>
+            <div class="form-group">
+                <label for="asunto">Asunto</label>
+                <select class="custom-select" id="asunto" required>
+                    <option selected>Choose...</option>
+                    <option value="Queja">Queja</option>
+                    <option value="Reclamo">Reclamo</option>
+                    <option value="Solicitud">Solicitud</option>
+                  </select>
+            </div>
+            <div class="form-group">
+                <label for="mensaje">Mensaje</label>
+                <textarea id="mensaje" class="form-control" aria-label="With textarea" required></textarea>
+            </div>
+            <button type="submit" id="submit" class="btn btn-primary">Submit</button>
+        </form>
+
+        <hr>
+        
+        <nav>
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <a class="nav-item nav-link active" id="nav-inbox-tab" data-toggle="tab" href="#nav-inbox" role="tab" aria-controls="nav-inbox" aria-selected="true">Inbox</a>
+            <a class="nav-item nav-link" id="nav-spam-tab" data-toggle="tab" href="#nav-spam" role="tab" aria-controls="nav-spam" aria-selected="false">Spam</a>
+        </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+        <div class="tab-pane fade show active" id="nav-inbox" role="tabpanel" aria-labelledby="nav-inbox-tab">
+            Inbox Vacio....
+        </div>
+        <div class="tab-pane fade" id="nav-spam" role="tabpanel" aria-labelledby="nav-spam-tab">
+            Spam Vacio...
+        </div>
+        </div>
+      </div>
+
+
+    <script>
+        const renderInbox = (mensajes) => {
+            const inbox = $('#nav-inbox');
+            let contenido = '';
+            mensajes.forEach(mensaje => {
+                contenido += `${ mensaje.asunto } | [ ${ mensaje.cantidad } ]<hr>`;
+            });
+            inbox.html(contenido);
+        }
+
+        const renderSpam = (mensajes) => {
+            const spam = $('#nav-spam');
+            let contenido = '';
+            mensajes.forEach(mensaje => {
+                contenido += `${mensaje.asunto} | [ ${ mensaje.cantidad } ]<hr>`;
+            });
+            spam.html(contenido);
+        }
+        
+       document.getElementById("submit").addEventListener("click", function(event){
+            event.preventDefault();
+            const email = $('#email').val();
+            const asunto = $('#asunto').val();
+            const mensaje = $('#mensaje').val();
+            const nombre = $('#nombre').val();
+
+            axios.post('http://sys.agro/api/inbox', {
+                email,
+                asunto,
+                nombre,
+                mensaje
+            })
+            .then(function (response) {
+                const { data: { Formularios } } = response;
+                const inbox = Formularios.filter(mensaje => !mensaje.es_spam);
+                const spam = Formularios.filter(mensaje => mensaje.es_spam);
+                renderInbox(inbox);
+                renderSpam(spam);
+            })
+            .catch(function (error) {
+                console.error(error);
+            });
+        });
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+</body>
+</html>
